@@ -1,6 +1,13 @@
 import { Game } from './models/Game.js';
+import { AnimationManager } from './utils/AnimationManager.js';
+import { VisualEffects } from './utils/VisualEffects.js';
+import { VisualStateManager } from './utils/VisualStateManager.js';
 
 const game = new Game(100, 10);
+const animationManager = new AnimationManager();
+const visualEffects = new VisualEffects();
+const visualStateManager = new VisualStateManager(animationManager, visualEffects);
+
 let currentBet = 10;
 
 const elements = {
@@ -39,7 +46,9 @@ function renderHand(container, cards, hideFirst = false) {
   container.innerHTML = '';
   cards.forEach((card, index) => {
     const shouldHide = hideFirst && index === 0 && game.dealerHidden;
-    container.appendChild(createCardElement(card, shouldHide));
+    const cardEl = createCardElement(card, shouldHide);
+    container.appendChild(cardEl);
+    animationManager.cardAppear(cardEl);
   });
 }
 
@@ -69,7 +78,7 @@ function checkGameOver() {
   return false;
 }
 
-function endRound(result) {
+async function endRound(result) {
   game.dealerHidden = false;
   renderHand(elements.dealerHand, game.getDealerCards());
 
@@ -85,12 +94,21 @@ function endRound(result) {
   elements.standButton.disabled = true;
   updateScores();
 
-  if (!checkGameOver()) {
-    return;
+  const moneyValue = elements.money;
+  const statusBox = elements.status;
+
+  if (result === 'player_win') {
+    await visualStateManager.onPlayerWin(statusBox, moneyValue, currentBet);
+  } else if (result === 'dealer_win') {
+    await visualStateManager.onPlayerLose(statusBox, moneyValue, currentBet);
+  } else {
+    await visualStateManager.onTie(statusBox);
   }
+
+  checkGameOver();
 }
 
-function beginRound() {
+async function beginRound() {
   if (elements.gameOver && !elements.gameOver.classList.contains('hidden')) {
     return;
   }
@@ -101,6 +119,10 @@ function beginRound() {
   renderHand(elements.dealerHand, game.getDealerCards(), true);
   renderHand(elements.playerHand, game.getPlayerCards());
   updateScores();
+
+  const dealerCards = [...elements.dealerHand.children];
+  const playerCards = [...elements.playerHand.children];
+  await visualStateManager.onDealCards(playerCards, dealerCards);
 
   elements.hitButton.disabled = false;
   elements.standButton.disabled = false;
@@ -118,8 +140,8 @@ function beginRound() {
   setStatus('Tu turno. Decide si pides o te plantas.', 'info');
 }
 
-function hit() {
-  if (!game.isRoundActive || elements.gameOver.classList.contains('hidden') === false) return;
+async function hit() {
+  if (!game.isRoundActive || !elements.gameOver.classList.contains('hidden')) return;
 
   const card = game.playerHit();
   if (card) {
@@ -129,23 +151,28 @@ function hit() {
 
   if (game.getPlayerValue() > 21) {
     const result = game.evaluateRound();
-    endRound(result);
+    await endRound(result);
     return;
   }
 
   if (game.getPlayerValue() === 21) {
     game.dealerPlay();
     const result = game.evaluateRound();
-    endRound(result);
+    await endRound(result);
   }
 }
 
-function stand() {
-  if (!game.isRoundActive || elements.gameOver.classList.contains('hidden') === false) return;
+async function stand() {
+  if (!game.isRoundActive || !elements.gameOver.classList.contains('hidden')) return;
+
+  const dealerFirstCard = elements.dealerHand.querySelector('.card:not(.hidden)');
+  if (dealerFirstCard) {
+    await visualStateManager.onDealerReveal(dealerFirstCard);
+  }
 
   game.dealerPlay();
   const result = game.evaluateRound();
-  endRound(result);
+  await endRound(result);
 }
 
 function hideLoadingScreen() {

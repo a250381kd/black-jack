@@ -18,6 +18,15 @@
       </div>
     </div>
 
+    <div id="game-over-screen" class="game-over-screen hidden" aria-live="polite">
+      <div class="game-over-panel">
+        <p class="eyebrow">Mesa rota</p>
+        <h2>Se acabó la banca</h2>
+        <p id="game-over-message">Te has quedado sin saldo.</p>
+        <button id="restart-button" class="primary">Reiniciar partida</button>
+      </div>
+    </div>
+
     <div class="game-shell">
       <header class="topbar">
         <div class="brand-block">
@@ -30,8 +39,22 @@
             <span>Saldo</span>
             <strong id="money">100</strong>
           </div>
+          <div class="score-box accent">
+            <span>Apuesta</span>
+            <strong id="bet-value">10</strong>
+          </div>
         </div>
       </header>
+
+      <section class="bet-panel" aria-label="Selecciona apuesta">
+        <p>Elige tu apuesta</p>
+        <div class="bet-options">
+          <button class="bet-button active" data-bet="5">5</button>
+          <button class="bet-button" data-bet="10">10</button>
+          <button class="bet-button" data-bet="25">25</button>
+          <button class="bet-button" data-bet="50">50</button>
+        </div>
+      </section>
 
       <main class="table">
         <section class="hand-panel">

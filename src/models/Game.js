@@ -101,4 +101,15 @@ export class Game {
   getMoney() {
     return this.money;
   }
+
+  resetGame() {
+    this.money = 100;
+    this.bet = 10;
+    this.playerHand.clear();
+    this.dealerHand.clear();
+    this.deck = new Deck();
+    this.isRoundActive = false;
+    this.isRoundFinished = false;
+    this.dealerHidden = true;
+  }
 }

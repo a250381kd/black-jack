@@ -3,19 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blackjack</title>
+    <title>Velvet House Blackjack</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body>
+    <div id="loading-screen" class="loading-screen" aria-live="polite">
+      <div class="loading-content">
+        <div class="loader-ring"></div>
+        <p>Velvet House</p>
+        <span>Cargando mesa...</span>
+      </div>
+    </div>
+
     <div class="game-shell">
       <header class="topbar">
         <div class="brand-block">
           <span class="brand-pill">BLACKJACK</span>
           <h1>Velvet House</h1>
         </div>
+
         <div class="scoreboard">
           <div class="score-box">
             <span>Saldo</span>
@@ -33,7 +42,7 @@
           <div id="dealer-hand" class="hand" aria-label="Cartas del crupier"></div>
         </section>
 
-        <div id="status" class="status-box">Pulsa “Nueva ronda” para empezar.</div>
+        <div id="status" class="status-box" data-tone="info">Pulsa “Nueva ronda” para empezar.</div>
 
         <section class="hand-panel">
           <div class="panel-header">

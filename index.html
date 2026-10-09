@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Velvet House Blackjack</title>
+    <title>BALATRO BLACKJACK</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -13,17 +13,17 @@
     <div id="loading-screen" class="loading-screen" aria-live="polite">
       <div class="loading-content">
         <div class="loader-ring"></div>
-        <p>Velvet House</p>
-        <span>Cargando mesa...</span>
+        <p>BALATRO</p>
+        <span>Inicializando mesa...</span>
       </div>
     </div>
 
     <div id="game-over-screen" class="game-over-screen hidden" aria-live="polite">
       <div class="game-over-panel">
-        <p class="eyebrow">Mesa rota</p>
-        <h2>Se acabó la banca</h2>
-        <p id="game-over-message">Te has quedado sin saldo.</p>
-        <button id="restart-button" class="primary">Reiniciar partida</button>
+        <p class="eyebrow">Partida Finalizada</p>
+        <h2>SE ACABÓ LA RACHA</h2>
+        <p id="game-over-message">Te has quedado sin fichas.</p>
+        <button id="restart-button" class="primary">Reintentar</button>
       </div>
     </div>
 
@@ -31,12 +31,12 @@
       <header class="topbar">
         <div class="brand-block">
           <span class="brand-pill">BLACKJACK</span>
-          <h1>Velvet House</h1>
+          <h1>BALATRO CARDS</h1>
         </div>
 
         <div class="scoreboard">
           <div class="score-box">
-            <span>Saldo</span>
+            <span>Fichas</span>
             <strong id="money">100</strong>
           </div>
           <div class="score-box accent">
@@ -65,7 +65,7 @@
           <div id="dealer-hand" class="hand" aria-label="Cartas del crupier"></div>
         </section>
 
-        <div id="status" class="status-box" data-tone="info">Pulsa “Nueva ronda” para empezar.</div>
+        <div id="status" class="status-box" data-tone="info">Pulsa "Nueva ronda" para empezar a jugar.</div>
 
         <section class="hand-panel">
           <div class="panel-header">
@@ -77,8 +77,8 @@
       </main>
 
       <nav class="controls" aria-label="Controles del juego">
-        <button id="deal-button" class="primary">Nueva ronda</button>
-        <button id="hit-button">Pedir carta</button>
+        <button id="deal-button" class="primary">Nueva Ronda</button>
+        <button id="hit-button">Pedir Carta</button>
         <button id="stand-button">Plantarse</button>
       </nav>
     </div>

@@ -1,0 +1,264 @@
+const handContainers = {
+  dealer: document.querySelector('#dealer-hand'),
+  player: document.querySelector('#player-hand')
+};
+
+const dealerScoreElement = document.querySelector('#dealer-score');
+const playerScoreElement = document.querySelector('#player-score');
+const moneyElement = document.querySelector('#money');
+const statusElement = document.querySelector('#status');
+
+const dealButton = document.querySelector('#deal-button');
+const hitButton = document.querySelector('#hit-button');
+const standButton = document.querySelector('#stand-button');
+
+const suits = ['♠', '♥', '♦', '♣'];
+const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+const state = {
+  deck: [],
+  dealer: [],
+  player: [],
+  money: 100,
+  bet: 10,
+  isRoundActive: false,
+  roundFinished: false,
+  dealerTurnDone: false,
+  hiddenDealerCard: true,
+};
+
+function shuffleDeck() {
+  const deck = [];
+
+  suits.forEach((suit) => {
+    values.forEach((value) => {
+      deck.push({ suit, value, face: value, color: ['♥', '♦'].includes(suit) ? 'red' : 'black' });
+    });
+  });
+
+  for (let i = deck.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+
+  return deck;
+}
+
+function getCardValue(card) {
+  if (card.value === 'A') return 11;
+  if (['K', 'Q', 'J'].includes(card.value)) return 10;
+  return Number(card.value);
+}
+
+function getHandValue(hand) {
+  let total = 0;
+  let aces = 0;
+
+  hand.forEach((card) => {
+    const value = getCardValue(card);
+    total += value;
+    if (card.value === 'A') aces += 1;
+  });
+
+  while (total > 21 && aces > 0) {
+    total -= 10;
+    aces -= 1;
+  }
+
+  return total;
+}
+
+function dealCard(targetHand) {
+  const card = state.deck.pop();
+  targetHand.push(card);
+  return card;
+}
+
+function renderHand(handKey, hideFirstCard = false) {
+  const container = handContainers[handKey];
+  const hand = state[handKey];
+
+  container.innerHTML = '';
+
+  hand.forEach((card, index) => {
+    const cardElement = document.createElement('div');
+    const isHidden = hideFirstCard && handKey === 'dealer' && index === 0 && state.hiddenDealerCard;
+
+    cardElement.className = `card ${card.color === 'red' ? 'red' : ''} ${isHidden ? 'hidden' : ''}`;
+
+    if (!isHidden) {
+      cardElement.innerHTML = `
+        <div class="card-top">
+          <div class="card-suit">${card.suit}</div>
+        </div>
+        <div class="card-value">${card.value}</div>
+        <div class="card-bottom">
+          <div class="card-suit">${card.suit}</div>
+        </div>
+      `;
+    }
+
+    container.appendChild(cardElement);
+  });
+}
+
+function updateScores() {
+  dealerScoreElement.textContent = state.hiddenDealerCard
+    ? getHandValue(state.dealer.slice(1))
+    : getHandValue(state.dealer);
+
+  playerScoreElement.textContent = getHandValue(state.player);
+  moneyElement.textContent = state.money;
+}
+
+function beginRound() {
+  state.deck = shuffleDeck();
+  state.dealer = [];
+  state.player = [];
+  state.isRoundActive = true;
+  state.roundFinished = false;
+  state.dealerTurnDone = false;
+  state.hiddenDealerCard = true;
+
+  dealCard(state.player);
+  dealCard(state.dealer);
+  dealCard(state.player);
+  dealCard(state.dealer);
+
+  renderHand('dealer', true);
+  renderHand('player', false);
+  updateScores();
+
+  if (getHandValue(state.player) === 21) {
+    finishRound('¡Blackjack!');
+    return;
+  }
+
+  statusElement.textContent = 'Tu turno';
+  hitButton.disabled = false;
+  standButton.disabled = false;
+}
+
+function newRound() {
+  if (!state.isRoundActive || state.roundFinished) {
+    beginRound();
+  }
+}
+
+function playerHit() {
+  if (!state.isRoundActive || state.roundFinished) return;
+
+  dealCard(state.player);
+  renderHand('player', false);
+  updateScores();
+
+  const value = getHandValue(state.player);
+
+  if (value > 21) {
+    finishRound('Te pasaste. Dealer gana.');
+  } else if (value === 21) {
+    finishRound('¡21!');
+  }
+}
+
+function dealerTurn() {
+  state.hiddenDealerCard = false;
+  renderHand('dealer', false);
+  updateScores();
+
+  while (getHandValue(state.dealer) < 17) {
+    dealCard(state.dealer);
+    renderHand('dealer', false);
+    updateScores();
+  }
+}
+
+function finishRound(message) {
+  state.isRoundActive = false;
+  state.roundFinished = true;
+  state.dealerTurnDone = true;
+  hitButton.disabled = true;
+  standButton.disabled = true;
+
+  if (!state.hiddenDealerCard && state.dealer.length > 0) {
+    renderHand('dealer', false);
+  }
+
+  const playerValue = getHandValue(state.player);
+  const dealerValue = getHandValue(state.dealer);
+
+  if (message === 'Te pasaste. Dealer gana.' || message === '¡Blackjack!' && dealerValue === 21) {
+    statusElement.textContent = message;
+    return;
+  }
+
+  if (message === '¡21!') {
+    statusElement.textContent = message;
+    return;
+  }
+
+  if (message && !['¡21!', 'Te pasaste. Dealer gana.'].includes(message)) {
+    statusElement.textContent = message;
+    return;
+  }
+
+  if (playerValue > 21) {
+    statusElement.textContent = 'Te pasaste. Dealer gana.';
+    return;
+  }
+
+  if (dealerValue > 21) {
+    state.money += state.bet;
+    statusElement.textContent = 'Dealer se pasa. ¡Ganaste!';
+    return;
+  }
+
+  if (playerValue > dealerValue) {
+    state.money += state.bet;
+    statusElement.textContent = '¡Ganaste!';
+  } else if (playerValue < dealerValue) {
+    state.money -= state.bet;
+    statusElement.textContent = 'Dealer gana.';
+  } else {
+    statusElement.textContent = 'Empate.';
+  }
+
+  updateScores();
+}
+
+function stand() {
+  if (!state.isRoundActive || state.roundFinished) return;
+
+  dealerTurn();
+
+  const playerValue = getHandValue(state.player);
+  const dealerValue = getHandValue(state.dealer);
+
+  if (playerValue > dealerValue) {
+    state.money += state.bet;
+    statusElement.textContent = '¡Ganaste!';
+  } else if (playerValue < dealerValue) {
+    state.money -= state.bet;
+    statusElement.textContent = 'Dealer gana.';
+  } else {
+    statusElement.textContent = 'Empate.';
+  }
+
+  state.isRoundActive = false;
+  state.roundFinished = true;
+  hitButton.disabled = true;
+  standButton.disabled = true;
+  updateScores();
+}
+
+dealButton.addEventListener('click', beginRound);
+hitButton.addEventListener('click', playerHit);
+standButton.addEventListener('click', stand);
+
+hitButton.disabled = true;
+standButton.disabled = true;
+state.money = 100;
+updateScores();
+renderHand('dealer', false);
+renderHand('player', false);
+statusElement.textContent = 'Pulsa “Nueva ronda” para empezar.';
